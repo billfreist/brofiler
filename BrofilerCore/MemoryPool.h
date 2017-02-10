@@ -2,10 +2,15 @@
 #include "Common.h"
 #include <new>
 
-namespace Brofiler
-{
+namespace Brofiler {
 
-template<class T, uint32 SIZE>
+////////////////////////////////////////////////////////////
+//
+//    MemoryChunk
+//
+/////
+
+template<class T, uint32_t SIZE>
 struct MemoryChunk {
     BRO_ALIGN_CACHE T data[SIZE];
     MemoryChunk* next;
@@ -23,17 +28,24 @@ struct MemoryChunk {
     }
 };
 
-template<class T, uint32 SIZE = 16>
+
+////////////////////////////////////////////////////////////
+//
+//    MemoryPool
+//
+/////
+
+template<class T, uint32_t SIZE = 16>
 class MemoryPool {
     typedef MemoryChunk<T, SIZE> Chunk;
     Chunk root;
 
-    Chunk* chunk;
-    uint32 index;
+    Chunk *  chunk;
+    uint32_t index;
 
-    uint32 chunkCount;
+    uint32_t chunkCount;
 
-    BRO_INLINE void AddChunk() {
+    BRO_FORCE_INLINE void AddChunk() {
         index = 0;
         if (!chunk->next) {
             void* ptr = MT::Memory::Alloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
@@ -47,14 +59,14 @@ class MemoryPool {
 public:
     MemoryPool() : chunk(&root), index(0), chunkCount(1) {}
 
-    BRO_INLINE T& Add() {
+    BRO_FORCE_INLINE T& Add() {
         if (index >= SIZE)
             AddChunk();
 
         return chunk->data[index++];
     }
 
-    BRO_INLINE T* TryAdd(int count) {
+    BRO_FORCE_INLINE T* TryAdd(int count) {
         if (index + count <= SIZE) {
             T* res = &chunk->data[index];
             index += count;
@@ -64,7 +76,7 @@ public:
         return nullptr;
     }
 
-    BRO_INLINE T* Back() {
+    BRO_FORCE_INLINE T* Back() {
         if (index > 0)
             return &chunk->data[index - 1];
 
@@ -74,7 +86,7 @@ public:
         return nullptr;
     }
 
-    BRO_INLINE size_t Size() const {
+    BRO_FORCE_INLINE size_t Size() const {
         size_t count = 0;
 
         for (const Chunk* it = &root; it != chunk; it = it->next)
@@ -83,11 +95,11 @@ public:
         return count + index;
     }
 
-    BRO_INLINE bool IsEmpty() const {
+    BRO_FORCE_INLINE bool IsEmpty() const {
         return chunk == &root && index == 0;
     }
 
-    BRO_INLINE void Clear(bool preserveMemory = true) {
+    BRO_FORCE_INLINE void Clear(bool preserveMemory = true) {
         if (!preserveMemory) {
             if (root.next) {
                 root.next->~MemoryChunk();
@@ -135,46 +147,46 @@ public:
         size_t chunkIndex;
     };
 
-    const_iterator begin() const {
+    const_iterator begin () const {
         return const_iterator(&root, 0);
     }
 
-    const_iterator end() const {
+    const_iterator end () const {
         return const_iterator(chunk, index);
     }
 
     template<class Func>
-    void ForEach(Func func) const {
+    void ForEach (Func func) const {
         for (const Chunk* it = &root; it != chunk; it = it->next)
-            for (uint32 i = 0; i < SIZE; ++i)
+            for (uint32_t i = 0; i < SIZE; ++i)
                 func(it->data[i]);
 
-        for (uint32 i = 0; i < index; ++i)
+        for (uint32_t i = 0; i < index; ++i)
             func(chunk->data[i]);
     }
 
     template<class Func>
-    void ForEach(Func func) {
-        for (Chunk* it = &root; it != chunk; it = it->next)
-            for (uint32 i = 0; i < SIZE; ++i)
+    void ForEach (Func func) {
+        for (Chunk * it = &root; it != chunk; it = it->next)
+            for (uint32_t i = 0; i < SIZE; ++i)
                 func(it->data[i]);
 
-        for (uint32 i = 0; i < index; ++i)
+        for (uint32_t i = 0; i < index; ++i)
             func(chunk->data[i]);
     }
 
     template<class Func>
-    void ForEachChunk(Func func) const {
+    void ForEachChunk (Func func) const {
         for (const Chunk* it = &root; it != chunk; it = it->next)
-            for (uint32 i = 0; i < SIZE; ++i)
+            for (uint32_t i = 0; i < SIZE; ++i)
                 func(it->data, SIZE);
 
-        for (uint32 i = 0; i < index; ++i)
+        for (uint32_t i = 0; i < index; ++i)
             func(chunk->data, index);
     }
 
-    void ToArray(T* destination) const {
-        uint32 curIndex = 0;
+    void ToArray (T * destination) const {
+        uint32_t curIndex = 0;
 
         for (const Chunk* it = &root; it != chunk; it = it->next) {
             memcpy(&destination[curIndex], it->data, sizeof(T) * SIZE);
@@ -187,4 +199,4 @@ public:
     }
 };
 
-}
+} // Brofiler

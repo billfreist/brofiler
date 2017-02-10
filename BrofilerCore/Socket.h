@@ -50,19 +50,26 @@ typedef UINT_PTR TcpSocket;
 
 #endif
 
-namespace Brofiler
-{
+namespace Brofiler {
+
 #if USE_WINDOWS_SOCKETS
+
+////////////////////////////////////////////////////////////
+//
+//    Wsa
+//
+/////
+
 class Wsa {
-    bool isInitialized;
+    bool    isInitialized;
     WSADATA data;
 
-    Wsa() {
+    Wsa () {
         isInitialized = WSAStartup(0x0202, &data) == ERROR_SUCCESS;
         BRO_ASSERT(isInitialized, "Can't initialize WSA");
     }
 
-    ~Wsa() {
+    ~Wsa () {
         if (isInitialized) {
             WSACleanup();
         }
@@ -76,7 +83,7 @@ public:
 #endif
 
 
-inline bool IsValidSocket(TcpSocket socket) {
+inline bool IsValidSocket (TcpSocket socket) {
 #ifdef USE_WINDOWS_SOCKETS
     if (socket == INVALID_SOCKET) {
         return false;
@@ -89,7 +96,7 @@ inline bool IsValidSocket(TcpSocket socket) {
     return true;
 }
 
-inline void CloseSocket(TcpSocket& socket) {
+inline void CloseSocket (TcpSocket & socket) {
 #ifdef USE_WINDOWS_SOCKETS
     closesocket(socket);
     socket = INVALID_SOCKET;
@@ -100,23 +107,29 @@ inline void CloseSocket(TcpSocket& socket) {
 }
 
 
+////////////////////////////////////////////////////////////
+//
+//    Socket
+//
+/////
+
 class Socket {
-    TcpSocket acceptSocket;
-    TcpSocket listenSocket;
+    TcpSocket   acceptSocket = 0;
+    TcpSocket   listenSocket = 0;
     sockaddr_in address;
 
     fd_set recieveSet;
 
-    MT::Mutex lock;
+    MT::Mutex    lock;
     std::wstring errorMessage;
 
-    void Close() {
+    void Close () {
         if (!IsValidSocket(listenSocket)) {
             CloseSocket(listenSocket);
         }
     }
 
-    bool Bind(short port) {
+    bool Bind (short port) {
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = INADDR_ANY;
         address.sin_port = htons(port);
@@ -128,7 +141,7 @@ class Socket {
         return false;
     }
 
-    void Disconnect() {
+    void Disconnect () {
         MT::ScopedGuard guard(lock);
 
         if (!IsValidSocket(acceptSocket)) {
@@ -136,7 +149,7 @@ class Socket {
         }
     }
 public:
-    Socket() : acceptSocket(0), listenSocket(0) {
+    Socket () {
 #ifdef USE_WINDOWS_SOCKETS
         Wsa::Init();
 #endif
@@ -144,12 +157,12 @@ public:
         BRO_ASSERT(IsValidSocket(listenSocket), "Can't create socket");
     }
 
-    ~Socket() {
+    ~Socket () {
         Disconnect();
         Close();
     }
 
-    bool Bind(short startPort, short portRange) {
+    bool Bind (short startPort, short portRange) {
         for (short port = startPort; port < startPort + portRange; ++port) {
             int result = Bind(port);
 
@@ -162,13 +175,13 @@ public:
         return false;
     }
 
-    void Listen() {
+    void Listen () {
         int result = ::listen(listenSocket, 8);
         BRO_UNUSED(result);
         BRO_ASSERT(result == 0, "Can't start listening");
     }
 
-    void Accept() {
+    void Accept () {
         TcpSocket incomingSocket = ::accept(listenSocket, nullptr, nullptr);
         BRO_ASSERT(IsValidSocket(incomingSocket), "Can't accept socket");
 
@@ -176,7 +189,7 @@ public:
         acceptSocket = incomingSocket;
     }
 
-    bool Send(const char *buf, size_t len) {
+    bool Send (const char * buf, size_t len) {
         MT::ScopedGuard guard(lock);
 
         if (!IsValidSocket(acceptSocket))
@@ -190,7 +203,7 @@ public:
         return true;
     }
 
-    int Receive(char *buf, int len) {
+    int Receive (char * buf, int len) {
         MT::ScopedGuard guard(lock);
 
         if (!IsValidSocket(acceptSocket))
@@ -215,8 +228,8 @@ public:
         return 0;
     }
 };
-}
 
+} // Brofiler
 
 #if MT_MSVC_COMPILER_FAMILY
 #pragma warning( pop )

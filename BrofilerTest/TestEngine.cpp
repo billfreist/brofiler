@@ -15,7 +15,7 @@ namespace Test
 void WorkerThread(void* _engine)
 {
 	Engine* engine = (Engine*)_engine;
-	BRO_FILE_THREAD("Worker")
+	BRO_FILE_THREAD_SCOPED("Worker")
 	
 	while (engine->IsAlive())
 	{
@@ -63,7 +63,7 @@ struct SimpleTask
 	void Do(MT::FiberContext& ctx)
 	{
 		{
-			BRO_FILE_CATEGORY("BeforeYield", Brofiler::Color::PaleGreen);
+			BRO_FILE_CATEGORY_SCOPED("BeforeYield", Brofiler::Color::PaleGreen);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + sin((float)i)) * 0.5f;
@@ -72,7 +72,7 @@ struct SimpleTask
 		ctx.Yield();
 
 		{
-			BRO_FILE_CATEGORY("AfterYield", Brofiler::Color::SandyBrown);
+			BRO_FILE_CATEGORY_SCOPED("AfterYield", Brofiler::Color::SandyBrown);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + cos((float)i)) * 0.5f;
@@ -141,25 +141,25 @@ bool Engine::Update()
 
 void Engine::UpdateInput()
 {
-	BRO_FILE_CATEGORY("UpdateInput", Brofiler::Color::SteelBlue);
+	BRO_FILE_CATEGORY_SCOPED("UpdateInput", Brofiler::Color::SteelBlue);
 	SlowFunction2();
 }
 
 void Engine::UpdateMessages()
 {
-	BRO_FILE_CATEGORY("UpdateMessages", Brofiler::Color::Orange);
+	BRO_FILE_CATEGORY_SCOPED("UpdateMessages", Brofiler::Color::Orange);
 	SlowFunction<REPEAT_COUNT>();
 }
 
 void Engine::UpdateLogic()
 {
-	BRO_FILE_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
+	BRO_FILE_CATEGORY_SCOPED("UpdateLogic", Brofiler::Color::Orchid);
 	SlowFunction<REPEAT_COUNT>();
 }
 
 void Engine::UpdateTasks()
 {
-	BRO_FILE_CATEGORY("UpdateTasks", Brofiler::Color::SkyBlue);
+	BRO_FILE_CATEGORY_SCOPED("UpdateTasks", Brofiler::Color::SkyBlue);
 	RootTask<16> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
 
@@ -173,13 +173,13 @@ void Engine::UpdateTasks()
 
 void Engine::UpdateScene()
 {
-	BRO_FILE_CATEGORY("UpdateScene", Brofiler::Color::SkyBlue);
+	BRO_FILE_CATEGORY_SCOPED("UpdateScene", Brofiler::Color::SkyBlue);
 	SlowFunction<REPEAT_COUNT>();
 }
 
 void Engine::Draw()
 {
-	BRO_FILE_CATEGORY("Draw", Brofiler::Color::Salmon);
+	BRO_FILE_CATEGORY_SCOPED("Draw", Brofiler::Color::Salmon);
 	SlowFunction<REPEAT_COUNT>();
 }
 

@@ -5,47 +5,42 @@ namespace Brofiler
 {
 
 
-OutputDataStream& SamplingProfiler::Serialize(OutputDataStream& stream)
-{
-	BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
+OutputDataStream& SamplingProfiler::Serialize(OutputDataStream& stream) {
+    BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
 
-	stream << (uint32)callstacks.size();
+    stream << (uint32)callstacks.size();
 
-	CallStackTreeNode tree;
+    CallStackTreeNode tree;
 
-	Core::Get().DumpProgress("Merging CallStacks...");
+    Core::Get().DumpProgress("Merging CallStacks...");
 
-	for(auto it = callstacks.begin(); it != callstacks.end(); ++it)
-	{
-		const CallStack& callstack = *it;
-		if (!callstack.empty())
-		{
-			tree.Merge(callstack, callstack.size() - 1);
-		}
-	}
+    for (auto it = callstacks.begin(); it != callstacks.end(); ++it) {
+        const CallStack& callstack = *it;
+        if (!callstack.empty()) {
+            tree.Merge(callstack, callstack.size() - 1);
+        }
+    }
 
-	std::unordered_set<uint64> addresses;
-	tree.CollectAddresses(addresses);
+    std::unordered_set<uint64> addresses;
+    tree.CollectAddresses(addresses);
 
-	Core::Get().DumpProgress("Resolving Symbols...");
+    Core::Get().DumpProgress("Resolving Symbols...");
 
-	SymbolEngine* symbolEngine = Core::Get().symbolEngine;
+    SymbolEngine* symbolEngine = Core::Get().symbolEngine;
 
-	std::vector<const Symbol*> symbols;
-	for(auto it = addresses.begin(); it != addresses.end(); ++it)
-	{
-		uint64 address = *it;
-		if (const Symbol* symbol = symbolEngine->GetSymbol(address))
-		{
-			symbols.push_back(symbol);
-		}
-	}
+    std::vector<const Symbol*> symbols;
+    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
+        uint64_t address = *it;
+        if (const Symbol* symbol = symbolEngine->GetSymbol(address)) {
+            symbols.push_back(symbol);
+        }
+    }
 
-	stream << symbols;
+    stream << symbols;
 
-	tree.Serialize(stream);
+    tree.Serialize(stream);
 
-	return stream;
+    return stream;
 
 
 }

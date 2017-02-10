@@ -5,26 +5,41 @@
 
 namespace Brofiler {
 
+////////////////////////////////////////////////////////////
+//
+//    Forward Declarations
+//
+/////
+
 struct EventDescription;
 
+
+////////////////////////////////////////////////////////////
+//
+//    EventDescriptionBoard
+//
+/////
+
 class EventDescriptionBoard {
-    std::vector<EventDescription*> board;
-    static EventDescriptionBoard instance;
 public:
-    EventDescription* CreateDescription();
 
-    static EventDescriptionBoard& Get();
+    static EventDescriptionBoard & Get();
 
-    void SetSamplingFlag(int index, bool flag);
-    bool HasSamplingEvents() const;
+    ~EventDescriptionBoard ();
 
-    const std::vector<EventDescription*>& GetEvents() const;
+    void SetSamplingFlag (int index, bool flag);
+    bool HasSamplingEvents () const;
 
-    ~EventDescriptionBoard();
+    EventDescription * CreateDescription ();
+    const std::vector<EventDescription *> & GetEvents () const;
 
-    friend OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob);
+    friend OutputDataStream & operator<< (OutputDataStream & stream, const EventDescriptionBoard & ob);
+
+private:
+
+    std::vector<EventDescription *> board;
 };
 
-OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob);
+OutputDataStream & operator<< (OutputDataStream & stream, const EventDescriptionBoard & ob);
 
 } // Brofiler

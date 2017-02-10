@@ -11,7 +11,7 @@ namespace Brofiler
 
 struct SysCallDesc {
     int64_t timestamp;
-    uint64 id;
+    uint64_t id;
 };
 
 //////////////////////////////////////////////////////////////////////////

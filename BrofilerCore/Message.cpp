@@ -5,47 +5,59 @@
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    MessageHeader
+//
+/////
 
 struct MessageHeader {
-    uint32 mark;
-    uint32 length;
+    uint32_t mark;
+    uint32_t length;
 
-    static const uint32 MESSAGE_MARK = 0xB50FB50F;
+    static constexpr uint32_t MESSAGE_MARK = 0xB50FB50F;
 
-    bool IsValid() const { return mark == MESSAGE_MARK; }
+    bool IsValid () const { return mark == MESSAGE_MARK; }
 
-    MessageHeader() : mark(0), length(0) {}
+    MessageHeader () : mark(0), length(0) {}
 };
 
+
+////////////////////////////////////////////////////////////
+//
+//    MessageFactory
+//
+/////
+
 class MessageFactory {
-    typedef IMessage* (*MessageCreateFunction)(InputDataStream& str);
+    using MessageCreateFunction = IMessage * (*)(InputDataStream & str);
     MessageCreateFunction factory[IMessage::COUNT];
 
     template<class T>
-    void RegisterMessage() {
+    void RegisterMessage () {
         factory[T::GetMessageType()] = T::Create;
     }
 
-    MessageFactory() {
+    MessageFactory () {
         memset(&factory[0], 0, sizeof(MessageCreateFunction));
 
         RegisterMessage<StartMessage>();
         RegisterMessage<StopMessage>();
         RegisterMessage<TurnSamplingMessage>();
 
-        for (uint32 msg = 0; msg < IMessage::COUNT; ++msg) {
+        for (uint32_t msg = 0; msg < IMessage::COUNT; ++msg) {
             BRO_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
         }
     }
 public:
-    static MessageFactory& Get() {
-        static MessageFactory instance;
-        return instance;
+    static MessageFactory & Get() {
+        static MessageFactory s_instance;
+        return s_instance;
     }
 
-    IMessage* Create(InputDataStream& str) {
+    IMessage * Create (InputDataStream & str) {
         MessageHeader header;
         str.Read(header);
 
@@ -67,12 +79,18 @@ public:
     }
 };
 
-OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val) {
+OutputDataStream & operator<< (OutputDataStream & os, const DataResponse & val) {
     return os << val.version << (uint32)val.type;
 }
 
 
-IMessage* IMessage::Create(InputDataStream& str) {
+////////////////////////////////////////////////////////////
+//
+//    IMessage
+//
+/////
+
+IMessage * IMessage::Create(InputDataStream & str) {
     MessageHeader header;
 
     while (str.Peek(header)) {
@@ -91,7 +109,14 @@ IMessage* IMessage::Create(InputDataStream& str) {
     return nullptr;
 }
 
-void StartMessage::Apply() {
+
+////////////////////////////////////////////////////////////
+//
+//    StartMessage
+//
+/////
+
+void StartMessage::Apply () {
     Core::Get().Activate(true);
 
     if (EventDescriptionBoard::Get().HasSamplingEvents()) {
@@ -99,13 +124,19 @@ void StartMessage::Apply() {
     }
 }
 
-IMessage* StartMessage::Create(InputDataStream&) {
+IMessage * StartMessage::Create (InputDataStream &) {
     return new StartMessage();
 }
 
 
+////////////////////////////////////////////////////////////
+//
+//    StopMessage
+//
+/////
+
 void StopMessage::Apply() {
-    Core& core = Core::Get();
+    Core & core = Core::Get();
     core.Activate(false);
     core.DumpFrames();
     core.DumpSamplingData();
@@ -117,15 +148,21 @@ IMessage* StopMessage::Create(InputDataStream&) {
 }
 
 
-IMessage* TurnSamplingMessage::Create(InputDataStream& stream) {
-    TurnSamplingMessage* msg = new TurnSamplingMessage();
+////////////////////////////////////////////////////////////
+//
+//    TurnSamplingMessage
+//
+/////
+
+IMessage * TurnSamplingMessage::Create(InputDataStream & stream) {
+    TurnSamplingMessage * msg = new TurnSamplingMessage();
     stream >> msg->index;
     stream >> msg->isSampling;
     return msg;
 }
 
-void TurnSamplingMessage::Apply() {
+void TurnSamplingMessage::Apply () {
     EventDescriptionBoard::Get().SetSamplingFlag(index, isSampling != 0);
 }
 
-}
+} // Brofiler

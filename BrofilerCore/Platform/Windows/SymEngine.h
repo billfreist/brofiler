@@ -14,25 +14,24 @@ namespace Brofiler
 typedef std::array<uintptr_t, 512> CallStackBuffer;
 
 
-class SymEngine : public SymbolEngine
-{
-	MW_HANDLE hProcess;
+class SymEngine : public SymbolEngine {
+    MW_HANDLE hProcess;
 
-	bool isInitialized;
+    bool isInitialized;
 
-	bool needRestorePreviousSettings;
-	uint32 previousOptions;
-	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
-	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
+    bool needRestorePreviousSettings;
+    uint32_t previousOptions;
+    static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
+    char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
 public:
-	SymEngine();
-	~SymEngine();
+    SymEngine();
+    ~SymEngine();
 
-	void Init();
-	void Close();
+    void Init();
+    void Close();
 
-	// Get Symbol from PDB file
-	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
+    // Get Symbol from PDB file
+    virtual const Symbol * const GetSymbol(uint64_t dwAddress) override;
 };
 
 }

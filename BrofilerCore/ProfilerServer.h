@@ -2,37 +2,46 @@
 
 #include "Message.h"
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    Forward Declarations
+//
+/////
 
 class Socket;
+
+
+////////////////////////////////////////////////////////////
+//
+//    Server
+//
+/////
 
 class Server {
     InputDataStream networkStream;
 
-    static const int BIFFER_SIZE = 1024;
+    static constexpr uint32_t BIFFER_SIZE = 1024;
     char buffer[BIFFER_SIZE];
 
     MT::Thread acceptThread;
+    Socket *   socket;
+    MT::Mutex  lock;
+    bool       isInitialized;
 
-    Socket* socket;
+    Server (short port);
+    ~Server ();
 
-    MT::Mutex lock;
+    bool InitConnection ();
 
-    bool isInitialized;
-
-    Server(short port);
-    ~Server();
-
-    bool InitConnection();
-
-    static void AsyncAccept(void* server);
-    bool Accept();
+    static void AsyncAccept (void * server);
+    bool Accept ();
 public:
-    void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
-    void Update();
+    void Send (DataResponse::Type type, OutputDataStream & stream = OutputDataStream::Empty);
+    void Update ();
 
-    static Server &Get();
+    static Server & Get ();
 };
 
-}
+} // Brofiler

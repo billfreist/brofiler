@@ -13,7 +13,7 @@ void CallstackCollector::Add(const CallstackDesc& desc) {
         storage[1] = desc.timestamp;
         storage[2] = desc.count;
 
-        for (uint64 i = 0; i < desc.count; ++i) {
+        for (uint64_t i = 0; i < desc.count; ++i) {
             storage[3 + i] = desc.callstack[desc.count - i - 1];
         }
     }
@@ -26,7 +26,7 @@ void CallstackCollector::Add(const CallstackDesc& desc) {
         item1 = desc.timestamp;
         item2 = desc.count;
 
-        for (uint64 i = 0; i < desc.count; ++i) {
+        for (uint64_t i = 0; i < desc.count; ++i) {
             callstacksPool.Add() = desc.callstack[desc.count - i - 1];
         }
     }
@@ -44,20 +44,20 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream) {
         CallstacksPool::const_iterator startIt = it;
         MT_UNUSED(startIt);
 
-        uint64 threadID = *it;
+        uint64_t threadID = *it;
         MT_UNUSED(threadID);
         ++it; //Skip ThreadID
-        uint64 timestamp = *it;
+        uint64_t timestamp = *it;
         MT_UNUSED(timestamp);
         ++it; //Skip Timestamp
-        uint64 count = *it;
+        uint64_t count = *it;
         count = (count & 0xFF);
         ++it; //Skip Count
 
         bool isBadAddrFound = false;
 
-        for (uint64 i = 0; i < count; ++i) {
-            uint64 address = *it;
+        for (uint64_t i = 0; i < count; ++i) {
+            uint64_t address = *it;
             ++it;
 
             if (address == 0) {
@@ -84,7 +84,7 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream) {
         callstackIndex++;
         msg.str("");
 
-        uint64 address = *it;
+        uint64_t address = *it;
         if (const Symbol* symbol = symEngine->GetSymbol(address)) {
             symbols.push_back(symbol);
         }

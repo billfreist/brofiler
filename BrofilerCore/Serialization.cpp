@@ -1,17 +1,23 @@
 #include "Common.h"
 #include "Serialization.h"
 
-namespace Brofiler
-{
-std::string OutputDataStream::GetData() {
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    OutputDataStream
+//
+/////
+
+OutputDataStream OutputDataStream::Empty;
+
+std::string OutputDataStream::GetData () {
     flush();
     return str();
 }
 
-Brofiler::OutputDataStream OutputDataStream::Empty;
-
-OutputDataStream &operator << (OutputDataStream &stream, const char* val) {
-    uint32 length = val == nullptr ? 0 : (uint32)strlen(val);
+OutputDataStream & operator << (OutputDataStream & stream, const char * val) {
+    uint32_t length = val == nullptr ? 0 : (uint32)strlen(val);
     stream << length;
 
     if (length > 0) {
@@ -20,49 +26,49 @@ OutputDataStream &operator << (OutputDataStream &stream, const char* val) {
     return stream;
 }
 
-OutputDataStream &operator << (OutputDataStream &stream, int val) {
+OutputDataStream & operator<< (OutputDataStream & stream, int val) {
     stream.write((char*)&val, sizeof(int));
     return stream;
 }
 
-OutputDataStream &operator << (OutputDataStream &stream, int64 val) {
+OutputDataStream & operator<< (OutputDataStream & stream, int64 val) {
     stream.write((char*)&val, sizeof(int64));
     return stream;
 }
 
-OutputDataStream &operator << (OutputDataStream &stream, char val) {
+OutputDataStream & operator<< (OutputDataStream & stream, char val) {
     stream.write((char*)&val, sizeof(char));
     return stream;
 }
 
-OutputDataStream &operator << (OutputDataStream &stream, int8 val) {
+OutputDataStream & operator<< (OutputDataStream & stream, int8_t val) {
     stream.write((char*)&val, sizeof(val));
     return stream;
 }
 
-OutputDataStream &operator << (OutputDataStream &stream, byte val) {
+OutputDataStream & operator<< (OutputDataStream & stream, uint8_t val) {
     stream.write((char*)&val, sizeof(byte));
     return stream;
 }
 
-OutputDataStream & operator<<(OutputDataStream &stream, uint64 val) {
+OutputDataStream & operator<< (OutputDataStream & stream, uint64_t val) {
     stream.write((char*)&val, sizeof(uint64));
     return stream;
 }
 
-OutputDataStream & operator<<(OutputDataStream &stream, uint32 val) {
+OutputDataStream & operator<< (OutputDataStream & stream, uint32_t val) {
     stream.write((char*)&val, sizeof(uint32));
     return stream;
 }
 
-OutputDataStream & operator<<(OutputDataStream &stream, const std::string& val) {
+OutputDataStream & operator<< (OutputDataStream & stream, const std::string & val) {
     stream << (uint32)val.size();
     if (!val.empty())
         stream.write(&val[0], sizeof(val[0]) * val.size());
     return stream;
 }
 
-OutputDataStream & operator<<(OutputDataStream &stream, const std::wstring& val) {
+OutputDataStream & operator<< (OutputDataStream & stream, const std::wstring & val) {
     size_t count = val.size() * sizeof(wchar_t);
     stream << (uint32)count;
     if (!val.empty())
@@ -70,49 +76,55 @@ OutputDataStream & operator<<(OutputDataStream &stream, const std::wstring& val)
     return stream;
 }
 
-InputDataStream &operator >> (InputDataStream &stream, int32 &val) {
-    stream.read((char*)&val, sizeof(int));
-    return stream;
+
+////////////////////////////////////////////////////////////
+//
+//    InputDataStream
+//
+/////
+
+InputDataStream::InputDataStream ()
+    : std::stringstream(ios_base::in | ios_base::out)
+{
 }
 
-InputDataStream &operator >> (InputDataStream &stream, int64 &val) {
-    stream.read((char*)&val, sizeof(int64));
-    return stream;
-}
-
-InputDataStream & operator>>(InputDataStream &stream, byte &val) {
-    stream.read((char*)&val, sizeof(byte));
-    return stream;
-}
-
-InputDataStream & operator>>(InputDataStream &stream, uint32 &val) {
-    stream.read((char*)&val, sizeof(uint32));
-    return stream;
-}
-
-InputDataStream & operator>>(InputDataStream &stream, uint64 &val) {
-    stream.read((char*)&val, sizeof(uint64));
-    return stream;
-}
-
-InputDataStream::InputDataStream() :
-    std::stringstream(ios_base::in | ios_base::out) {
-}
-
-void InputDataStream::Append(const char *buffer, size_t length) {
+void InputDataStream::Append (const char * buffer, size_t length) {
     write(buffer, length);
 }
 
-size_t InputDataStream::Length() {
+size_t InputDataStream::Length () {
     return (size_t)(tellp() - tellg());
 }
 
-bool InputDataStream::Skip(size_t length) {
+bool InputDataStream::Skip (size_t length) {
     bool result = Length() <= length;
     seekg(length, ios_base::cur);
     return result;
 }
 
-
-
+InputDataStream & operator>> (InputDataStream & stream, int32 & val) {
+    stream.read((char*)&val, sizeof(int));
+    return stream;
 }
+
+InputDataStream & operator>> (InputDataStream & stream, int64 & val) {
+    stream.read((char*)&val, sizeof(int64));
+    return stream;
+}
+
+InputDataStream & operator>> (InputDataStream & stream, uint8_t & val) {
+    stream.read((char*)&val, sizeof(byte));
+    return stream;
+}
+
+InputDataStream & operator>> (InputDataStream & stream, uint32_t & val) {
+    stream.read((char*)&val, sizeof(uint32));
+    return stream;
+}
+
+InputDataStream & operator>> (InputDataStream & stream, uint64_t & val) {
+    stream.read((char*)&val, sizeof(uint64));
+    return stream;
+}
+
+} // Brofile

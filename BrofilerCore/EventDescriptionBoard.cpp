@@ -1,22 +1,42 @@
 #include "EventDescriptionBoard.h"
 #include "Event.h"
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    Shared Data
+//
+/////
 
 static MT::Mutex g_lock;
 
-EventDescriptionBoard& EventDescriptionBoard::Get() {
-    return instance;
+
+////////////////////////////////////////////////////////////
+//
+//    EventDescriptionBoard
+//
+/////
+
+EventDescriptionBoard & EventDescriptionBoard::Get () {
+    static EventDescriptionBoard s_instance;
+    return s_instance;
 }
 
-void EventDescriptionBoard::SetSamplingFlag(int index, bool flag) {
+EventDescriptionBoard::~EventDescriptionBoard () {
+    for (auto it = board.begin(); it != board.end(); ++it) {
+        EventDescription * desc = *it;
+        delete desc;
+    }
+}
+
+void EventDescriptionBoard::SetSamplingFlag (int index, bool flag) {
     MT::ScopedGuard guard(g_lock);
     BRO_VERIFY(index < (int)board.size(), "Invalid EventDescription index", return);
 
     if (index < 0) {
         for (auto it = board.begin(); it != board.end(); ++it) {
-            EventDescription* desc = *it;
+            EventDescription * desc = *it;
             desc->isSampling = flag;
         }
     }
@@ -25,10 +45,10 @@ void EventDescriptionBoard::SetSamplingFlag(int index, bool flag) {
     }
 }
 
-bool EventDescriptionBoard::HasSamplingEvents() const {
+bool EventDescriptionBoard::HasSamplingEvents () const {
     MT::ScopedGuard guard(g_lock);
     for (auto it = board.begin(); it != board.end(); ++it) {
-        EventDescription* desc = *it;
+        EventDescription * desc = *it;
         if (desc->isSampling) {
             return true;
         }
@@ -37,26 +57,19 @@ bool EventDescriptionBoard::HasSamplingEvents() const {
     return false;
 }
 
-const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const {
+const std::vector<EventDescription *> & EventDescriptionBoard::GetEvents () const {
     return board;
 }
 
-EventDescriptionBoard::~EventDescriptionBoard() {
-    for (auto it = board.begin(); it != board.end(); ++it) {
-        EventDescription* desc = *it;
-        delete desc;
-    }
-}
-
-EventDescription* EventDescriptionBoard::CreateDescription() {
+EventDescription * EventDescriptionBoard::CreateDescription () {
     MT::ScopedGuard guard(g_lock);
-    EventDescription* desc = new EventDescription();
+    EventDescription * desc = new EventDescription();
     desc->index = uint32_t(board.size());
     board.push_back(desc);
     return desc;
 }
 
-OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob) {
+OutputDataStream & operator<< (OutputDataStream & stream, const EventDescriptionBoard & ob) {
     MT::ScopedGuard guard(g_lock);
     const std::vector<EventDescription*>& events = ob.GetEvents();
 
@@ -70,6 +83,4 @@ OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionB
     return stream;
 }
 
-Brofiler::EventDescriptionBoard EventDescriptionBoard::instance;
-
-}
+} // Brofiler

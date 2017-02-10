@@ -11,10 +11,10 @@ namespace Brofiler
 class SymEngine;
 //////////////////////////////////////////////////////////////////////////
 struct CallstackDesc {
-    uint64 threadID;
-    uint64 timestamp;
+    uint64_t threadID;
+    uint64_t timestamp;
     uint64* callstack;
-    uint8 count;
+    uint8_t count;
 };
 
 

@@ -4,6 +4,7 @@
 
 
 // Inject brofiler code into the task scope
+#define MT_SCHEDULER_PROFILER_TASK_SCOPE_CODE_INJECTION( TYPE, DEBUG_COLOR, SRC_FILE, SRC_LINE) BRO_FILE_CATEGORY_SCOPED( MT_TEXT( #TYPE ), uint32_t(DEBUG_COLOR) );
 
 
 #include <MTPlatform.h>

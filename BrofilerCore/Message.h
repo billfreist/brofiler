@@ -2,10 +2,22 @@
 #include "Common.h"
 #include "Serialization.h"
 
-namespace Brofiler
-{
+namespace Brofiler {
 
-static const uint32 NETWORK_PROTOCOL_VERSION = 12;
+////////////////////////////////////////////////////////////
+//
+//    Constants
+//
+/////
+
+constexpr uint32_t NETWORK_PROTOCOL_VERSION = 12;
+
+
+////////////////////////////////////////////////////////////
+//
+//    DataResponse
+//
+/////
 
 struct DataResponse {
     enum Type {
@@ -22,14 +34,25 @@ struct DataResponse {
         FiberSynchronization = 10,			// FiberSync Data
     };
 
-    uint32 version;
-    uint32 size;
-    Type type;
+    uint32_t version;
+    uint32_t size;
+    Type   type;
 
-    DataResponse(Type t, uint32 s) : version(NETWORK_PROTOCOL_VERSION), size(s), type(t) {}
+    DataResponse (Type t, uint32_t s)
+        : version(NETWORK_PROTOCOL_VERSION)
+        , size(s)
+        , type(t)
+    { }
 };
 
-OutputDataStream& operator << (OutputDataStream& os, const DataResponse& val);
+OutputDataStream & operator<< (OutputDataStream & os, const DataResponse & val);
+
+
+////////////////////////////////////////////////////////////
+//
+//    IMessage
+//
+/////
 
 class IMessage {
 public:
@@ -40,35 +63,42 @@ public:
         COUNT,
     };
 
-    virtual void Apply() = 0;
-    virtual ~IMessage() {}
+    virtual void Apply () = 0;
+    virtual ~IMessage () {}
 
-    static IMessage* Create(InputDataStream& str);
+    static IMessage * Create (InputDataStream & str);
 };
+
+
+////////////////////////////////////////////////////////////
+//
+//    Messages
+//
+/////
 
 template<IMessage::Type MESSAGE_TYPE>
 class Message : public IMessage {
     enum { id = MESSAGE_TYPE };
 public:
-    static uint32 GetMessageType() { return id; }
+    static uint32_t GetMessageType () { return id; }
 };
 
 struct StartMessage : public Message<IMessage::Start> {
-    static IMessage* Create(InputDataStream&);
-    virtual void Apply() override;
+    static IMessage * Create (InputDataStream &);
+    virtual void Apply () override;
 };
 
 struct StopMessage : public Message<IMessage::Stop> {
-    static IMessage* Create(InputDataStream&);
-    virtual void Apply() override;
+    static IMessage * Create (InputDataStream &);
+    virtual void Apply () override;
 };
 
 struct TurnSamplingMessage : public Message<IMessage::TurnSampling> {
     int32 index;
-    byte isSampling;
+    uint8_t  isSampling;
 
-    static IMessage* Create(InputDataStream& stream);
-    virtual void Apply() override;
+    static IMessage * Create (InputDataStream & stream);
+    virtual void Apply () override;
 };
 
-}
+} // Brofiler

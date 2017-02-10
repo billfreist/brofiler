@@ -30,7 +30,7 @@ int main()
 
 	while( true ) 
 	{
-		BRO_FILE_FRAME("MainThread");
+		BRO_FILE_FRAME_SCOPED("MainThread");
 		
 		if (!engine.Update())
 			break;
