@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Profiler" 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Profiler.MainWindow"
-        Title="What the hell is going on?" 
+        Title="Bro, where'd all your perf go?" 
         Height="700" Width="900" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"
