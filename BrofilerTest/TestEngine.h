@@ -10,33 +10,39 @@
 #include <MTPlatform.h>
 #include <MTScheduler.h>
 
-namespace Test
-{
-	// Test engine: emulates some hard CPU work.
-	class Engine
-	{
-		MT::TaskScheduler scheduler;
+namespace Test {
 
-		static const size_t WORKER_THREAD_COUNT = 2;
-		std::array<MT::Thread, WORKER_THREAD_COUNT> workers;
-		bool isAlive;
+////////////////////////////////////////////////////////////
+//
+//    Engine
+//
+/////
 
-		void UpdateInput();
-		void UpdateMessages();
-		void UpdateLogic();
-		void UpdateTasks();
-		void UpdateScene();
-		void Draw();
-	public:
-		Engine();
-		~Engine();
+// Test engine: emulates some hard CPU work.
+class Engine {
+    MT::TaskScheduler scheduler;
 
-		// Updates engine, should be called once per frame.
-		// Returns false if it doesn't want to update any more.
-		bool Update();
+    static constexpr size_t WORKER_THREAD_COUNT = 2;
+    std::array<MT::Thread, WORKER_THREAD_COUNT> workers;
+    bool isAlive;
 
-		void UpdatePhysics();
+    void UpdateInput ();
+    void UpdateMessages ();
+    void UpdateLogic ();
+    void UpdateTasks ();
+    void UpdateScene ();
+    void Draw ();
+public:
+    Engine ();
+    ~Engine ();
 
-		bool IsAlive() const { return isAlive; }
-	};
-}
+    // Updates engine, should be called once per frame.
+    // Returns false if it doesn't want to update any more.
+    bool Update ();
+
+    void UpdatePhysics ();
+
+    bool IsAlive () const { return isAlive; }
+};
+
+} // Test

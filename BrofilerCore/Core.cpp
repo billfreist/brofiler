@@ -25,7 +25,7 @@ namespace Brofiler {
 //
 /////
 
-mt_thread_local EventStorage * Core::storage = nullptr;
+thread_local EventStorage * Core::storage = nullptr;
 Core Core::notThreadSafeInstance;
 
 Core::Core ()

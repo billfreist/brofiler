@@ -42,17 +42,12 @@ solution "Brofiler"
 	flags {
 		"NoManifest",
 		"ExtraWarnings",
-		"Unicode"
+		"Unicode",
 	}
 	optimization_flags = { "OptimizeSpeed" }
 
-	
 if isVisualStudio then
 	debugdir (outFolderRoot)
-	buildoptions {
-		"/wd4127", -- Conditional expression is constant
-		"/wd4091"  -- 'typedef ': ignored on left of '' when no variable is declared
-	}
 end
 
 if isUWP then
@@ -121,6 +116,12 @@ if _OPTIONS['platform'] ~= "orbis" then
 -- else
 	kind "StaticLib"
 end
+
+	if isVisualStudio then
+		buildoptions {
+			"/wd4091"  -- 'typedef ': ignored on left of '' when no variable is declared
+		}
+	end
 
 	includedirs
 	{

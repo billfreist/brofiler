@@ -277,7 +277,7 @@ public:
     bool isActive = false;
 
     // Active Frame (is used as buffer)
-    static mt_thread_local EventStorage * storage;
+    static thread_local EventStorage * storage;
 
     // Controls sampling routine
     SamplingProfiler * samplingProfiler;

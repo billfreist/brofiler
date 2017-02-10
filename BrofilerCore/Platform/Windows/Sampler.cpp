@@ -17,7 +17,6 @@ namespace Brofiler {
 //
 /////
 
-
 static void ClearStackContext (CONTEXT & context) {
     memset(&context, 0, sizeof(context));
     context.ContextFlags = CONTEXT_FULL;

@@ -13,17 +13,15 @@ namespace Brofiler {
 template<class T, uint32_t SIZE>
 struct MemoryChunk {
     BRO_ALIGN_CACHE T data[SIZE];
-    MemoryChunk* next;
-    MemoryChunk* prev;
+    MemoryChunk * next = nullptr;
+    MemoryChunk * prev = nullptr;
 
-    MemoryChunk() : next(0), prev(0) {}
-
-    ~MemoryChunk() {
+    ~MemoryChunk () {
         if (next) {
             next->~MemoryChunk();
             MT::Memory::Free(next);
-            next = 0;
-            prev = 0;
+            next = nullptr;
+            prev = nullptr;
         }
     }
 };
@@ -56,19 +54,20 @@ class MemoryPool {
 
         ++chunkCount;
     }
-public:
-    MemoryPool() : chunk(&root), index(0), chunkCount(1) {}
 
-    BRO_FORCE_INLINE T& Add() {
+public:
+    MemoryPool () : chunk(&root), index(0), chunkCount(1) {}
+
+    BRO_FORCE_INLINE T & Add () {
         if (index >= SIZE)
             AddChunk();
 
         return chunk->data[index++];
     }
 
-    BRO_FORCE_INLINE T* TryAdd(int count) {
+    BRO_FORCE_INLINE T * TryAdd (int count) {
         if (index + count <= SIZE) {
-            T* res = &chunk->data[index];
+            T * res = &chunk->data[index];
             index += count;
             return res;
         }
@@ -76,7 +75,7 @@ public:
         return nullptr;
     }
 
-    BRO_FORCE_INLINE T* Back() {
+    BRO_FORCE_INLINE T * Back () {
         if (index > 0)
             return &chunk->data[index - 1];
 
@@ -86,20 +85,20 @@ public:
         return nullptr;
     }
 
-    BRO_FORCE_INLINE size_t Size() const {
+    BRO_FORCE_INLINE size_t Size () const {
         size_t count = 0;
 
-        for (const Chunk* it = &root; it != chunk; it = it->next)
+        for (const Chunk * it = &root; it != chunk; it = it->next)
             count += SIZE;
 
         return count + index;
     }
 
-    BRO_FORCE_INLINE bool IsEmpty() const {
+    BRO_FORCE_INLINE bool IsEmpty () const {
         return chunk == &root && index == 0;
     }
 
-    BRO_FORCE_INLINE void Clear(bool preserveMemory = true) {
+    BRO_FORCE_INLINE void Clear (bool preserveMemory = true) {
         if (!preserveMemory) {
             if (root.next) {
                 root.next->~MemoryChunk();
@@ -113,7 +112,7 @@ public:
     }
 
     class const_iterator {
-        void advance() {
+        void advance () {
             if (chunkIndex < SIZE - 1) {
                 ++chunkIndex;
             }
@@ -124,26 +123,26 @@ public:
         }
     public:
         typedef const_iterator self_type;
-        typedef T value_type;
-        typedef T& reference;
-        typedef T* pointer;
-        typedef int difference_type;
-        const_iterator(const Chunk* ptr, size_t index) : chunkPtr(ptr), chunkIndex(index) {}
-        self_type operator++() {
+        typedef T              value_type;
+        typedef T &            reference;
+        typedef T *            pointer;
+        typedef int            difference_type;
+        const_iterator (const Chunk * ptr, size_t index) : chunkPtr(ptr), chunkIndex(index) {}
+        self_type operator++ () {
             self_type i = *this;
             advance();
             return i;
         }
-        self_type operator++(int junk) {
+        self_type operator++ (int junk) {
             advance();
             return *this;
         }
-        reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
-        const pointer operator->() { return &chunkPtr->data[chunkIndex]; }
-        bool operator==(const self_type& rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
-        bool operator!=(const self_type& rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
+        reference operator* () { return (reference)chunkPtr->data[chunkIndex]; }
+        const pointer operator-> () { return &chunkPtr->data[chunkIndex]; }
+        bool operator== (const self_type & rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
+        bool operator!= (const self_type & rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
     private:
-        const Chunk* chunkPtr;
+        const Chunk * chunkPtr;
         size_t chunkIndex;
     };
 
@@ -157,7 +156,7 @@ public:
 
     template<class Func>
     void ForEach (Func func) const {
-        for (const Chunk* it = &root; it != chunk; it = it->next)
+        for (const Chunk * it = &root; it != chunk; it = it->next)
             for (uint32_t i = 0; i < SIZE; ++i)
                 func(it->data[i]);
 
@@ -177,7 +176,7 @@ public:
 
     template<class Func>
     void ForEachChunk (Func func) const {
-        for (const Chunk* it = &root; it != chunk; it = it->next)
+        for (const Chunk * it = &root; it != chunk; it = it->next)
             for (uint32_t i = 0; i < SIZE; ++i)
                 func(it->data, SIZE);
 
@@ -188,7 +187,7 @@ public:
     void ToArray (T * destination) const {
         uint32_t curIndex = 0;
 
-        for (const Chunk* it = &root; it != chunk; it = it->next) {
+        for (const Chunk * it = &root; it != chunk; it = it->next) {
             memcpy(&destination[curIndex], it->data, sizeof(T) * SIZE);
             curIndex += SIZE;
         }
