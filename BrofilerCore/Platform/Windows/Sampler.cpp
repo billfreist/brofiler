@@ -82,13 +82,13 @@ bool Sampler::IsActive () const {
     return workerThread != nullptr || finishEvent != nullptr;
 }
 
-DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam) {
-    Sampler& sampler = *(Sampler*)(lpParam);
+DWORD WINAPI Sampler::AsyncUpdate (LPVOID lpParam) {
+    Sampler & sampler = *(Sampler*)(lpParam);
 
-    std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
+    std::vector<std::pair<HANDLE, ThreadEntry *>> openThreads;
     openThreads.reserve(sampler.targetThreads.size());
 
-    for each (ThreadEntry* entry in sampler.targetThreads) {
+    for (ThreadEntry * entry : sampler.targetThreads) {
         BRO_VERIFY(!entry->description.threadID.IsEqual(MT::ThreadId::Self()), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
         HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, (DWORD)entry->description.threadID.AsUInt64());
@@ -111,7 +111,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam) {
         MT::SpinSleepMicroSeconds(sampler.intervalMicroSeconds);
 
         // Check whether we are inside sampling scope
-        for each (const auto& entry in openThreads) {
+        for (const auto & entry : openThreads) {
             HANDLE handle = entry.first;
             const ThreadEntry* thread = entry.second;
 
@@ -142,7 +142,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam) {
         }
     }
 
-    for each (const auto& entry in openThreads)
+    for (const auto & entry : openThreads)
         CloseHandle(entry.first);
 
     return 0;
@@ -202,7 +202,7 @@ uint32_t Sampler::GetCallstack (HANDLE hThread, CONTEXT & context, CallStackBuff
 }
 
 bool Sampler::IsSamplingScope () const {
-    for each (const ThreadEntry * entry in targetThreads) {
+    for (const ThreadEntry * entry : targetThreads) {
         if (const EventStorage * storage = *entry->threadTLS) {
             if (storage->isSampling.Load()) {
                 return true;
