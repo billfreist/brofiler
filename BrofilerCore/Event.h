@@ -17,4 +17,4 @@ OutputDataStream & operator<< (OutputDataStream & stream, const EventData & ob);
 OutputDataStream & operator<< (OutputDataStream & stream, const SyncData & ob);
 OutputDataStream & operator<< (OutputDataStream & stream, const FiberSyncData & ob);
 
-}
+} // Brofiler

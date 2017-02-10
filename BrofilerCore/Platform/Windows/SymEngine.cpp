@@ -5,36 +5,33 @@
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
 
-namespace Brofiler
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    SymEngine
+//
+/////
+
+SymEngine::SymEngine ()
+    : isInitialized(false)
+    , hProcess(GetCurrentProcess())
+    , needRestorePreviousSettings(false)
+    , previousOptions(0)
 {
-
-//void ReportLastError()
-//{
-//	LPVOID lpMsgBuf;
-//	DWORD dw = GetLastError();
-//
-//	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-//								NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
-//								(LPTSTR)&lpMsgBuf, 0, NULL);
-//
-//	MessageBox(NULL, (LPCTSTR)lpMsgBuf, TEXT("Error"), MB_OK);
-//	LocalFree(lpMsgBuf);
-//}
-
-SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0) {
 }
 
-SymEngine::~SymEngine() {
+SymEngine::~SymEngine () {
     Close();
 }
 
-const Symbol * const SymEngine::GetSymbol(uint64_t address) {
+const Symbol * const SymEngine::GetSymbol (uint64_t address) {
     if (address == 0)
         return nullptr;
 
     Init();
 
-    Symbol& symbol = cache[address];
+    Symbol & symbol = cache[address];
 
     if (symbol.address != 0)
         return &symbol;
@@ -53,7 +50,6 @@ const Symbol * const SymEngine::GetSymbol(uint64_t address) {
     if (SymGetModuleInfoW64(hProcess, dwAddress, &moduleInfo)) {
         symbol.module = moduleInfo.ImageName;
     }
-
 
     // FileName and Line
     IMAGEHLP_LINEW64 lineInfo;
@@ -85,9 +81,7 @@ const Symbol * const SymEngine::GetSymbol(uint64_t address) {
     return &symbol;
 }
 
-// const char* USER_SYMBOL_SEARCH_PATH = "http://msdl.microsoft.com/download/symbols";
-
-void SymEngine::Init() {
+void SymEngine::Init () {
     if (!isInitialized) {
         previousOptions = SymGetOptions();
 
@@ -108,7 +102,7 @@ void SymEngine::Init() {
     }
 }
 
-void SymEngine::Close() {
+void SymEngine::Close () {
     if (isInitialized) {
         SymCleanup(hProcess);
         isInitialized = false;
@@ -125,14 +119,11 @@ void SymEngine::Close() {
     }
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-SymbolEngine* SymbolEngine::Get() {
+SymbolEngine * SymbolEngine::Get () {
     static SymEngine pdbSymbolEngine;
     return &pdbSymbolEngine;
 }
 
-}
+} // Brofiler
 
-#endif
-
+#endif // _WIN32

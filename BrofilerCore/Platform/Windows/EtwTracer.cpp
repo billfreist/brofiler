@@ -11,8 +11,13 @@ Event Tracing Functions - API
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 */
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    CSwitch
+//
+/////
 
 struct CSwitch {
     // New thread ID after the switch.
@@ -103,6 +108,12 @@ struct CSwitch {
 };
 
 
+////////////////////////////////////////////////////////////
+//
+//    StackWalk_Event
+//
+/////
+
 struct StackWalk_Event {
     // Original event time stamp from the event header
     uint64_t EventTimeStamp;
@@ -119,6 +130,13 @@ struct StackWalk_Event {
     static const uint8_t OPCODE = 32;
 };
 
+
+////////////////////////////////////////////////////////////
+//
+//    SampledProfile
+//
+/////
+
 struct SampledProfile {
     uint32_t InstructionPointer;
     uint32_t ThreadId;
@@ -127,11 +145,25 @@ struct SampledProfile {
     static const uint8_t OPCODE = 46;
 };
 
+
+////////////////////////////////////////////////////////////
+//
+//    SysCallEnter
+//
+/////
+
 struct SysCallEnter {
     uintptr_t SysCallAddress;
 
     static const uint8_t OPCODE = 51;
 };
+
+
+////////////////////////////////////////////////////////////
+//
+//    SysCallExit
+//
+/////
 
 struct SysCallExit {
     uint32_t SysCallNtStatus;
@@ -140,19 +172,37 @@ struct SysCallExit {
 };
 
 
+////////////////////////////////////////////////////////////
+//
+//    Constants
+//
+/////
 
 // ce1dbfb4-137e-4da6-87b0-3f59aa102cbc 
 DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
 
-
 // 3d6fa8d1-fe05-11d0-9dda-00c04fd7ba7c
 DEFINE_GUID(CSwitchProfileGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
 
+const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
+
+
+////////////////////////////////////////////////////////////
+//
+//    Shared Data
+//
+/////
 
 static DWORD currentProcessId = 0;
 
 
-void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord) {
+////////////////////////////////////////////////////////////
+//
+//    Helpers
+//
+/////
+
+void WINAPI OnRecordEvent (PEVENT_RECORD eventRecord) {
     static uint8_t cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
 
     const uint8_t opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
@@ -226,43 +276,21 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord) {
         SysCallExit* pEventExit = (SysCallExit*)eventRecord->UserData;
         BRO_UNUSED(pEventExit);
     }
-
-
 }
 
-static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer) {
+static ULONG WINAPI OnBufferRecord (_In_ PEVENT_TRACE_LOGFILE Buffer) {
     BRO_UNUSED(Buffer);
     return true;
 }
 
-const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 
+////////////////////////////////////////////////////////////
+//
+//    ETW
+//
+/////
 
-DWORD WINAPI ETW::RunProcessTraceThreadFunction(LPVOID parameter) {
-    ETW* etw = (ETW*)parameter;
-    ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
-    BRO_UNUSED(status);
-    return 0;
-}
-
-
-void ETW::AdjustPrivileges() {
-    HANDLE token = 0;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token)) {
-        TOKEN_PRIVILEGES tokenPrivileges;
-        memset(&tokenPrivileges, 0, sizeof(tokenPrivileges));
-        tokenPrivileges.PrivilegeCount = 1;
-        tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-        LookupPrivilegeValue(NULL, SE_SYSTEM_PROFILE_NAME, &tokenPrivileges.Privileges[0].Luid);
-
-        AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
-        CloseHandle(token);
-    }
-}
-
-
-
-ETW::ETW()
+ETW::ETW ()
     : isActive(false)
     , traceSessionHandle(INVALID_TRACEHANDLE)
     , openedHandle(INVALID_TRACEHANDLE)
@@ -273,7 +301,13 @@ ETW::ETW()
     currentProcessId = GetCurrentProcessId();
 }
 
-CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads) {
+ETW::~ETW() {
+    Stop();
+    free (traceProperties);
+    traceProperties = nullptr;
+}
+
+CaptureStatus::Type ETW::Start (int mode, const ThreadList & threads, bool autoAddUnknownThreads) {
     if (!isActive) {
         AdjustPrivileges();
 
@@ -407,7 +441,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
     return CaptureStatus::OK;
 }
 
-bool ETW::Stop() {
+bool ETW::Stop () {
     if (!isActive) {
         return false;
     }
@@ -434,13 +468,35 @@ bool ETW::Stop() {
     return wasThreadClosed && (closeTraceStatus == ERROR_SUCCESS) && (controlTraceResult == ERROR_SUCCESS);
 }
 
-ETW::~ETW() {
-    Stop();
-    free (traceProperties);
-    traceProperties = nullptr;
+DWORD WINAPI ETW::RunProcessTraceThreadFunction (LPVOID parameter) {
+    ETW * etw = (ETW*)parameter;
+    ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
+    BRO_UNUSED(status);
+    return 0;
 }
 
-SchedulerTrace* SchedulerTrace::Get() {
+void ETW::AdjustPrivileges () {
+    HANDLE token = 0;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token)) {
+        TOKEN_PRIVILEGES tokenPrivileges;
+        memset(&tokenPrivileges, 0, sizeof(tokenPrivileges));
+        tokenPrivileges.PrivilegeCount = 1;
+        tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        LookupPrivilegeValue(NULL, SE_SYSTEM_PROFILE_NAME, &tokenPrivileges.Privileges[0].Luid);
+
+        AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+        CloseHandle(token);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+//
+//    SchedulerTrace
+//
+/////
+
+SchedulerTrace * SchedulerTrace::Get () {
     static ETW etwTracer;
     return &etwTracer;
 }

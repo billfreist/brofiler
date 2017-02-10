@@ -4,11 +4,16 @@
 
 #include <unordered_set>
 
-namespace Brofiler
-{
-//////////////////////////////////////////////////////////////////////////
-void CallstackCollector::Add(const CallstackDesc& desc) {
-    if (uint64* storage = callstacksPool.TryAdd(desc.count + 3)) {
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    CallstackCollector
+//
+/////
+
+void CallstackCollector::Add (const CallstackDesc & desc) {
+    if (uint64 * storage = callstacksPool.TryAdd(desc.count + 3)) {
         storage[0] = desc.threadID;
         storage[1] = desc.timestamp;
         storage[2] = desc.count;
@@ -18,9 +23,9 @@ void CallstackCollector::Add(const CallstackDesc& desc) {
         }
     }
     else {
-        uint64& item0 = callstacksPool.Add();
-        uint64& item1 = callstacksPool.Add();
-        uint64& item2 = callstacksPool.Add();
+        uint64 & item0 = callstacksPool.Add();
+        uint64 & item1 = callstacksPool.Add();
+        uint64 & item2 = callstacksPool.Add();
 
         item0 = desc.threadID;
         item1 = desc.timestamp;
@@ -31,12 +36,12 @@ void CallstackCollector::Add(const CallstackDesc& desc) {
         }
     }
 }
-//////////////////////////////////////////////////////////////////////////
-void CallstackCollector::Clear() {
+
+void CallstackCollector::Clear () {
     callstacksPool.Clear(false);
 }
 
-bool CallstackCollector::SerializeSymbols(OutputDataStream& stream) {
+bool CallstackCollector::SerializeSymbols (OutputDataStream & stream) {
     typedef std::unordered_set<uint64> SymbolSet;
     SymbolSet symbolSet;
 
@@ -70,9 +75,9 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream) {
         }
     }
 
-    SymbolEngine* symEngine = Core::Get().symbolEngine;
+    SymbolEngine * symEngine = Core::Get().symbolEngine;
 
-    std::vector<const Symbol*> symbols;
+    std::vector<const Symbol *> symbols;
     symbols.reserve(symbolSet.size());
 
     std::stringstream msg;
@@ -98,8 +103,7 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream) {
     return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool CallstackCollector::SerializeCallstacks(OutputDataStream& stream) {
+bool CallstackCollector::SerializeCallstacks (OutputDataStream & stream) {
     stream << callstacksPool;
 
     if (!callstacksPool.IsEmpty()) {
@@ -109,9 +113,9 @@ bool CallstackCollector::SerializeCallstacks(OutputDataStream& stream) {
 
     return false;
 }
-//////////////////////////////////////////////////////////////////////////
-bool CallstackCollector::IsEmpty() const {
+
+bool CallstackCollector::IsEmpty () const {
     return callstacksPool.IsEmpty();
 }
-//////////////////////////////////////////////////////////////////////////
-}
+
+} // Brofiler

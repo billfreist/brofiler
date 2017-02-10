@@ -7,11 +7,15 @@
 
 #pragma comment( lib, "psapi.lib" )
 
-namespace Brofiler
-{
+namespace Brofiler {
 
+////////////////////////////////////////////////////////////
+//
+//    Exported
+//
+/////
 
-bool EnumerateAllThreads(std::vector<ThreadInfo>& threads) {
+bool EnumerateAllThreads (std::vector<ThreadInfo> & threads) {
     char tempBuffer[MAX_PATH];
 
     DWORD processId = GetCurrentProcessId();
@@ -78,6 +82,6 @@ bool EnumerateAllThreads(std::vector<ThreadInfo>& threads) {
     return true;
 }
 
-}
+} // Brofiler
 
-#endif
+#endif // _WIN32

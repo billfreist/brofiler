@@ -1,6 +1,5 @@
-#ifdef _WIN32
-#include "Common.h"
 
+#ifdef _WIN32
 
 #include "Common.h"
 #include "Event.h"
@@ -10,10 +9,56 @@
 #include <DbgHelp.h>
 #include <unordered_set>
 
-namespace Brofiler
-{
+namespace Brofiler {
 
-bool Sampler::StopSampling() {
+////////////////////////////////////////////////////////////
+//
+//    Helpers
+//
+/////
+
+
+static void ClearStackContext (CONTEXT & context) {
+    memset(&context, 0, sizeof(context));
+    context.ContextFlags = CONTEXT_FULL;
+}
+
+
+////////////////////////////////////////////////////////////
+//
+//    Sampler
+//
+/////
+
+Sampler::Sampler ()
+    : workerThread(nullptr)
+    , finishEvent(nullptr)
+    , intervalMicroSeconds(300)
+{
+}
+
+Sampler::~Sampler () {
+    StopSampling();
+}
+
+void Sampler::StartSampling (const std::vector<ThreadEntry *> & threads, uint32_t samplingInterval) {
+    intervalMicroSeconds = samplingInterval;
+    targetThreads = threads;
+
+    if (IsActive())
+        StopSampling();
+
+    callstacks.clear();
+
+    BRO_VERIFY(finishEvent == nullptr && workerThread == nullptr, "Can't start sampling!", return);
+
+    finishEvent = CreateEvent(NULL, false, false, 0);
+    workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
+
+    BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
+}
+
+bool Sampler::StopSampling () {
     if (!IsActive())
         return false;
 
@@ -34,37 +79,8 @@ bool Sampler::StopSampling() {
     return true;
 }
 
-Sampler::Sampler() : workerThread(nullptr), finishEvent(nullptr), intervalMicroSeconds(300) {
-}
-
-Sampler::~Sampler() {
-    StopSampling();
-}
-
-void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint32_t samplingInterval) {
-    intervalMicroSeconds = samplingInterval;
-    targetThreads = threads;
-
-    if (IsActive())
-        StopSampling();
-
-    callstacks.clear();
-
-    BRO_VERIFY(finishEvent == nullptr && workerThread == nullptr, "Can't start sampling!", return);
-
-    finishEvent = CreateEvent(NULL, false, false, 0);
-    workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
-
-    BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
-}
-
-bool Sampler::IsActive() const {
+bool Sampler::IsActive () const {
     return workerThread != nullptr || finishEvent != nullptr;
-}
-
-void ClearStackContext(CONTEXT& context) {
-    memset(&context, 0, sizeof(context));
-    context.ContextFlags = CONTEXT_FULL;
 }
 
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam) {
@@ -133,8 +149,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam) {
     return 0;
 }
 
-
-uint32_t Sampler::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) {
+uint32_t Sampler::GetCallstack (HANDLE hThread, CONTEXT & context, CallStackBuffer & callstack) {
     // We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
     // Otherwise it will be 5x times slower
     // Init();
@@ -187,11 +202,9 @@ uint32_t Sampler::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer
     return index;
 }
 
-
-
-bool Sampler::IsSamplingScope() const {
-    for each (const ThreadEntry* entry in targetThreads) {
-        if (const EventStorage* storage = *entry->threadTLS) {
+bool Sampler::IsSamplingScope () const {
+    for each (const ThreadEntry * entry in targetThreads) {
+        if (const EventStorage * storage = *entry->threadTLS) {
             if (storage->isSampling.Load()) {
                 return true;
             }
@@ -201,20 +214,15 @@ bool Sampler::IsSamplingScope() const {
     return false;
 }
 
-size_t Sampler::GetCollectedCount() const {
+size_t Sampler::GetCollectedCount () const {
     return callstacks.size();
 }
 
-
-SamplingProfiler* SamplingProfiler::Get() {
+SamplingProfiler * SamplingProfiler::Get () {
     static Sampler winSamplingProfiler;
     return &winSamplingProfiler;
 }
 
+} // Brofiler
 
-}
-
-
-
-#endif
-
+#endif // _WIN32

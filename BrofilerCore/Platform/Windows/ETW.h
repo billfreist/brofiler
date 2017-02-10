@@ -15,11 +15,11 @@
 #define EVENT_RECORD_DEF
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
+/////
 #define PROCESS_TRACE_MODE_REAL_TIME                0x00000100
 #define PROCESS_TRACE_MODE_RAW_TIMESTAMP            0x00001000
 #define PROCESS_TRACE_MODE_EVENT_RECORD             0x10000000
-///////////////////////////////////////////////////////////////////////////////
+/////
 #ifndef EVENT_DESCRIPTOR_DEF
 #define EVENT_DESCRIPTOR_DEF
 typedef struct _EVENT_DESCRIPTOR {
@@ -35,7 +35,7 @@ typedef struct _EVENT_DESCRIPTOR {
 } EVENT_DESCRIPTOR, *PEVENT_DESCRIPTOR;
 typedef const EVENT_DESCRIPTOR *PCEVENT_DESCRIPTOR;
 #endif
-///////////////////////////////////////////////////////////////////////////////
+/////
 #ifndef EVENT_HEADER_DEF
 #define EVENT_HEADER_DEF
 typedef struct _EVENT_HEADER {
@@ -61,7 +61,7 @@ typedef struct _EVENT_HEADER {
 
 } EVENT_HEADER, *PEVENT_HEADER;
 #endif
-///////////////////////////////////////////////////////////////////////////////
+/////
 #ifndef EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
 #define EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
 typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
@@ -78,7 +78,7 @@ typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
 
 } EVENT_HEADER_EXTENDED_DATA_ITEM, *PEVENT_HEADER_EXTENDED_DATA_ITEM;
 #endif
-///////////////////////////////////////////////////////////////////////////////
+/////
 #ifndef EVENT_RECORD_DEF
 #define EVENT_RECORD_DEF
 typedef struct _EVENT_RECORD {
@@ -92,7 +92,7 @@ typedef struct _EVENT_RECORD {
     PVOID               UserContext;
 } EVENT_RECORD, *PEVENT_RECORD;
 #endif
-///////////////////////////////////////////////////////////////////////////////
+/////
 
 
 

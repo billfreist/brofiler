@@ -4,36 +4,56 @@
 #include <vector>
 #include <string>
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    ThreadIdExt
+//
+/////
+
 struct ThreadIdExt : public MT::ThreadId {
 
-    ThreadIdExt(uint32_t _id) {
+    ThreadIdExt (uint32_t _id) {
         id = _id;
         isInitialized.Store(1);
     }
 
 };
 
+
+////////////////////////////////////////////////////////////
+//
+//    ThreadInfo
+//
+/////
+
 struct ThreadInfo {
     std::string name;
     ThreadIdExt id;
-    bool fromOtherProcess;
+    bool        fromOtherProcess;
 
-    ThreadInfo()
+    ThreadInfo ()
         : id(0)
-        , fromOtherProcess(false) {
+        , fromOtherProcess(false)
+    {
     }
 
-    ThreadInfo(uint32_t _id, const char* _name, bool _fromOtherProcess)
+    ThreadInfo (uint32_t _id, const char * _name, bool fromOtherProcess)
         : name(_name)
         , id(_id)
-        , fromOtherProcess(_fromOtherProcess) {
+        , fromOtherProcess(fromOtherProcess)
+    {
     }
-
 };
 
 
+////////////////////////////////////////////////////////////
+//
+//    Exported
+//
+/////
+
 extern bool EnumerateAllThreads(std::vector<ThreadInfo> & threads);
 
-}
+} // Brofiler

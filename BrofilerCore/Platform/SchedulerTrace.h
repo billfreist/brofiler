@@ -4,8 +4,14 @@
 #include "ThreadsEnumerator.h"
 
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    SchedulerTrace
+//
+/////
+
 struct SchedulerTrace {
     enum Mode {
         SWITCH_CONTEXTS = 1 << 0,
@@ -15,12 +21,12 @@ struct SchedulerTrace {
     };
 
     std::vector<Brofiler::ThreadInfo> allProcessThreads;
-    std::unordered_map<uint64, ThreadEntry*> activeThreadsIDs;
+    std::unordered_map<uint64, ThreadEntry *> activeThreadsIDs;
 
-    virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads);
-    virtual bool Stop();
+    virtual CaptureStatus::Type Start (int mode, const ThreadList & threads, bool autoAddUnknownThreads);
+    virtual bool Stop ();
 
-    virtual ~SchedulerTrace() {};
-    static SchedulerTrace* Get();
+    virtual ~SchedulerTrace () { };
+    static SchedulerTrace * Get ();
 };
 }
