@@ -477,12 +477,9 @@ namespace Profiler
                 canvas.Draw(BackgroundMesh);
             }
 
-            Rect box = new Rect(0, 0, scroll.Width, scroll.Height);
             foreach (ThreadRow row in rows)
             {
-                box.Height = row.Height;
-                row.Render(canvas, scroll, layer, box);
-                box.Y = box.Y + row.Height;
+                row.Render(canvas, scroll, layer);
             }
 
             if (layer == DirectXCanvas.Layer.Foreground)

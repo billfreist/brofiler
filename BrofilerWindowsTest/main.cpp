@@ -30,7 +30,7 @@ int main()
 
 	while( true ) 
 	{
-		BROFILER_FRAME("MainThread");
+		BRO_FILE_FRAME("MainThread");
 		
 		if (!engine.Update())
 			break;

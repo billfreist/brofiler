@@ -4,36 +4,35 @@
 
 namespace Brofiler
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class Socket;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Server
-{
-	InputDataStream networkStream;
 
-	static const int BIFFER_SIZE = 1024;
-	char buffer[BIFFER_SIZE];
+class Server {
+    InputDataStream networkStream;
 
-	MT::Thread acceptThread;
+    static const int BIFFER_SIZE = 1024;
+    char buffer[BIFFER_SIZE];
 
-	Socket* socket;
+    MT::Thread acceptThread;
 
-	MT::Mutex lock;
+    Socket* socket;
 
-	bool isInitialized;
-	
-	Server( short port );
-	~Server();
+    MT::Mutex lock;
 
-	bool InitConnection();
+    bool isInitialized;
 
-	static void AsyncAccept(void* server);
-	bool Accept();
+    Server(short port);
+    ~Server();
+
+    bool InitConnection();
+
+    static void AsyncAccept(void* server);
+    bool Accept();
 public:
-	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
-	void Update();
+    void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
+    void Update();
 
-	static Server &Get();
+    static Server &Get();
 };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

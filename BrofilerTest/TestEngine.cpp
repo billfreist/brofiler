@@ -7,15 +7,15 @@
 
 static const size_t SCHEDULER_WORKERS_COUNT = 0;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 namespace Test
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void WorkerThread(void* _engine)
 {
 	Engine* engine = (Engine*)_engine;
-	BROFILER_THREAD("Worker")
+	BRO_FILE_THREAD("Worker")
 	
 	while (engine->IsAlive())
 	{
@@ -24,21 +24,21 @@ void WorkerThread(void* _engine)
 		engine->UpdatePhysics();
 	}
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static const unsigned long REPEAT_COUNT = 128 * 1024;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 template<unsigned long N>
 void SlowFunction()
-{ PROFILE
+{ BRO_FILE_SCOPED();
 	// Make it static to fool compiler and prevent it from skipping
 	static float value = 0.0f;
 	
 	for (unsigned long i = 0; i < N; ++i)
 		value = (value + sin((float)i)) * 0.5f;
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void SlowFunction2()
-{ PROFILE
+{ BRO_FILE_SCOPED();
 	// Make it static to fool compiler and prevent it from skipping
 	static std::vector<float> values(1024 * 1024);
 
@@ -50,7 +50,7 @@ void SlowFunction2()
 		values[i] -= i;
 	}
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 template<unsigned long N>
 struct SimpleTask
 {
@@ -63,7 +63,7 @@ struct SimpleTask
 	void Do(MT::FiberContext& ctx)
 	{
 		{
-			BROFILER_CATEGORY("BeforeYield", Brofiler::Color::PaleGreen);
+			BRO_FILE_CATEGORY("BeforeYield", Brofiler::Color::PaleGreen);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + sin((float)i)) * 0.5f;
@@ -72,7 +72,7 @@ struct SimpleTask
 		ctx.Yield();
 
 		{
-			BROFILER_CATEGORY("AfterYield", Brofiler::Color::SandyBrown);
+			BRO_FILE_CATEGORY("AfterYield", Brofiler::Color::SandyBrown);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + cos((float)i)) * 0.5f;
@@ -80,7 +80,7 @@ struct SimpleTask
 
 	}
 };
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 template<unsigned long CHILDREN_COUNT>
 struct RootTask
 {
@@ -119,7 +119,7 @@ struct PriorityTask
 	}
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool Engine::Update()
 { 
 	UpdateInput();
@@ -138,28 +138,28 @@ bool Engine::Update()
 
 	return true;
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdateInput()
 {
-	BROFILER_CATEGORY("UpdateInput", Brofiler::Color::SteelBlue);
+	BRO_FILE_CATEGORY("UpdateInput", Brofiler::Color::SteelBlue);
 	SlowFunction2();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdateMessages()
 {
-	BROFILER_CATEGORY("UpdateMessages", Brofiler::Color::Orange);
+	BRO_FILE_CATEGORY("UpdateMessages", Brofiler::Color::Orange);
 	SlowFunction<REPEAT_COUNT>();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdateLogic()
 {
-	BROFILER_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
+	BRO_FILE_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
 	SlowFunction<REPEAT_COUNT>();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdateTasks()
 {
-	BROFILER_CATEGORY("UpdateTasks", Brofiler::Color::SkyBlue);
+	BRO_FILE_CATEGORY("UpdateTasks", Brofiler::Color::SkyBlue);
 	RootTask<16> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
 
@@ -170,25 +170,25 @@ void Engine::UpdateTasks()
 
 	scheduler.WaitAll(100000);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdateScene()
 {
-	BROFILER_CATEGORY("UpdateScene", Brofiler::Color::SkyBlue);
+	BRO_FILE_CATEGORY("UpdateScene", Brofiler::Color::SkyBlue);
 	SlowFunction<REPEAT_COUNT>();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::Draw()
 {
-	BROFILER_CATEGORY("Draw", Brofiler::Color::Salmon);
+	BRO_FILE_CATEGORY("Draw", Brofiler::Color::Salmon);
 	SlowFunction<REPEAT_COUNT>();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void Engine::UpdatePhysics()
 { 
-	//BROFILER_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
+	//BRO_FILE_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
 	MT::SpinSleepMilliSeconds(20);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #if MT_MSVC_COMPILER_FAMILY
 #pragma warning( push )
@@ -247,9 +247,9 @@ public:
 
 	virtual void OnTemporaryWorkerThreadJoin() override
 	{
-		Brofiler::EventStorage** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
+		Brofiler::EventStorage ** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
 		MT_ASSERT(currentThreadStorageSlot, "Sanity check failed");
-		Brofiler::EventStorage* storage = *currentThreadStorageSlot;
+		Brofiler::EventStorage * storage = *currentThreadStorageSlot;
 
 		// if profile session is not active
 		if (storage == nullptr)
@@ -263,7 +263,7 @@ public:
 
 	virtual void OnThreadCreated(uint32 workerIndex) override 
 	{
-		BROFILER_START_THREAD("Scheduler(Worker)");
+		BRO_FILE_START_THREAD("Scheduler(Worker)");
 		MT_UNUSED(workerIndex);
 	}
 
@@ -275,7 +275,7 @@ public:
 	virtual void OnThreadStoped(uint32 workerIndex) override
 	{
 		MT_UNUSED(workerIndex);
-		BROFILER_STOP_THREAD();
+		BRO_FILE_STOP_THREAD();
 	}
 
 	virtual void OnThreadIdleStarted(uint32 workerIndex) override
@@ -292,15 +292,15 @@ public:
 	{
 	}
 
-	virtual void OnThreadWaitFinished() override
+	virtual void OnThreadWaitFinished () override
 	{
 	}
 
-	virtual void OnTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, MT::TaskExecuteState::Type type, int32 fiberIndex) override 
+	virtual void OnTaskExecuteStateChanged (MT::Color::Type debugColor, const mt_char * debugID, MT::TaskExecuteState::Type type, int32 fiberIndex) override 
 	{
 		MT_ASSERT(fiberIndex < (int32)totalFibersCount, "Sanity check failed");
 
-		Brofiler::EventStorage** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
+		Brofiler::EventStorage ** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
 		MT_ASSERT(currentThreadStorageSlot, "Sanity check failed");
 
 		// if profile session is not active
@@ -365,15 +365,6 @@ public:
 			break;
 		}
 
-/*
-static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__, (unsigned long)COLOR ); \
-	::Brofiler::Category				  BRO_CONCAT(autogenerated_event_, __LINE__)( *(BRO_CONCAT(autogenerated_description_, __LINE__)) ); \
-
-		
-		BROFILER_CATEGORY
-
-*/
-
 		MT_UNUSED(debugColor);
 		MT_UNUSED(debugID);
 		MT_UNUSED(type);
@@ -385,12 +376,12 @@ static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LI
 #pragma warning( pop )
 #endif
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 mt_thread_local Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
 mt_thread_local Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 MT::IProfilerEventListener* GetProfiler()
 {
@@ -398,7 +389,7 @@ MT::IProfilerEventListener* GetProfiler()
 	return &profiler;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 Engine::Engine() : scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler()), isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
@@ -406,7 +397,7 @@ Engine::Engine() : scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler()), i
 		workers[i].Start(1024*1024, WorkerThread, this);
 	}
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 Engine::~Engine()
 {
 	isAlive = false;
@@ -414,5 +405,5 @@ Engine::~Engine()
 	for (size_t i = 0; i < workers.size(); ++i)
 		workers[i].Join();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

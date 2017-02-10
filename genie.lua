@@ -4,7 +4,7 @@ newoption {
 }
 
 if not _ACTION then
-	_ACTION="vs2012"
+	_ACTION = "vs2012"
 end
 
 outFolderRoot = "Bin/" .. _ACTION .. "/";
@@ -39,13 +39,17 @@ solution "Brofiler"
 	startproject "BrofilerTest"
 
 	location ( outputFolder )
-	flags { "NoManifest", "ExtraWarnings", "Unicode" }
+	flags {
+		"NoManifest",
+		"ExtraWarnings",
+		"Unicode"
+	}
 	optimization_flags = { "OptimizeSpeed" }
 
 	
 if isVisualStudio then
 	debugdir (outFolderRoot)
-	buildoptions { 
+	buildoptions {
 		"/wd4127", -- Conditional expression is constant
 		"/wd4091"  -- 'typedef ': ignored on left of '' when no variable is declared
 	}
@@ -55,8 +59,8 @@ if isUWP then
 	defines { "BRO_UWP=1" }
 end
 
-	defines { "USE_BROFILER=1"}
-	defines { "BRO_FIBERS=1"}
+	defines { "BRO_USE_BROFILER=1" }
+	defines { "BRO_FIBERS=1" }
 
 	local config_list = {
 		"Release",
@@ -76,7 +80,7 @@ end
 -- CONFIGURATIONS
 
 if _ACTION == "vs2010" then
-defines { "_DISABLE_DEPRECATE_STATIC_CPPLIB", "_STATIC_CPPLIB"}
+	defines { "_DISABLE_DEPRECATE_STATIC_CPPLIB", "_STATIC_CPPLIB"}
 end
 
 configuration "Release"
@@ -112,9 +116,9 @@ project "BrofilerCore"
 	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
 
 if _OPTIONS['platform'] ~= "orbis" then
-	kind "SharedLib"
-	defines { "PROFILER_EXPORTS" }
-else
+-- 	kind "SharedLib"
+-- 	defines { "PROFILER_EXPORTS" }
+-- else
 	kind "StaticLib"
 end
 

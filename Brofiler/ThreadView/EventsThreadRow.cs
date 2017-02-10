@@ -326,9 +326,9 @@ namespace Profiler
                     {
                         double center = scroll.TimeToPixel(callstack);
 
-                        Point a = new Point(center - unitWidth, offset);
-                        Point b = new Point(center, offset + unitHeight);
-                        Point c = new Point(center + unitWidth, offset);
+                        Point a = new Point(center - width, offset);
+                        Point b = new Point(center, offset + height);
+                        Point c = new Point(center + width, offset);
 
                         CallstackMeshPolys.AddTri(a, b, c, (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor);
                         CallstackMeshLines.AddTri(a, b, c, Colors.Black);
