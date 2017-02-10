@@ -53,5 +53,4 @@ private:
     static MW_DWORD MW_WINAPI AsyncUpdate(void* lpParam);
 };
 
-}
-
+} // Brofiler

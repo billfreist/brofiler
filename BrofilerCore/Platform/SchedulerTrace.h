@@ -29,4 +29,5 @@ struct SchedulerTrace {
     virtual ~SchedulerTrace () { };
     static SchedulerTrace * Get ();
 };
-}
+
+} // Brofiler

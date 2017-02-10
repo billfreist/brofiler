@@ -178,7 +178,7 @@ struct SysCallExit {
 //
 /////
 
-// ce1dbfb4-137e-4da6-87b0-3f59aa102cbc 
+// ce1dbfb4-137e-4da6-87b0-3f59aa102cbc
 DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
 
 // 3d6fa8d1-fe05-11d0-9dda-00c04fd7ba7c
@@ -294,7 +294,8 @@ ETW::ETW ()
     : isActive(false)
     , traceSessionHandle(INVALID_TRACEHANDLE)
     , openedHandle(INVALID_TRACEHANDLE)
-    , processThreadHandle(INVALID_HANDLE_VALUE) {
+    , processThreadHandle(INVALID_HANDLE_VALUE)
+{
     ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
     traceProperties = (EVENT_TRACE_PROPERTIES*)malloc(bufferSize);
 
@@ -302,8 +303,8 @@ ETW::ETW ()
 }
 
 ETW::~ETW() {
-    Stop();
-    free (traceProperties);
+    ETW::Stop();
+    free(traceProperties);
     traceProperties = nullptr;
 }
 
@@ -501,6 +502,6 @@ SchedulerTrace * SchedulerTrace::Get () {
     return &etwTracer;
 }
 
-}
+} // Brofiler
 
-#endif
+#endif // _WIN32

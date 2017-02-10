@@ -2,44 +2,44 @@
 #include "Core.h"
 #include <unordered_map>
 
-namespace Brofiler
-{
+namespace Brofiler {
+
+////////////////////////////////////////////////////////////
+//
+//    Symbol
+//
+/////
 
 struct Symbol {
-    uint64_t address;
-    uint64_t offset;
+    uint64_t     address = 0;
+    uint64_t     offset  = 0;
     std::wstring module;
     std::wstring file;
     std::wstring function;
-    uint32_t line;
-    Symbol()
-        : address(0)
-        , offset(0)
-        , line(0) {
-    }
+    uint32_t     line    = 0;
 };
 
-
-OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol);
-
+OutputDataStream & operator<< (OutputDataStream & os, const Symbol * const symbol);
 
 
-
-typedef std::unordered_map<uint64, Symbol> SymbolCache;
+////////////////////////////////////////////////////////////
+//
+//    SymbolEngine
+//
+/////
 
 struct SymbolEngine {
     // Get Symbol from address
-    virtual const Symbol* const GetSymbol(uint64_t dwAddress) = 0;
+    virtual const Symbol * const GetSymbol (uint64_t dwAddress) = 0;
 
-    virtual ~SymbolEngine() {};
+    virtual ~SymbolEngine () {};
 
-    static SymbolEngine* Get();
+    static SymbolEngine * Get ();
 
 protected:
 
+    using SymbolCache = std::unordered_map<uint64, Symbol>;
     SymbolCache cache;
-
-
 };
 
-}
+} // Brofiler

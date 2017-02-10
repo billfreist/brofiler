@@ -37,6 +37,6 @@ private:
     static void AdjustPrivileges ();
 };
 
-}
+} // Brofiler
 
-#endif
+#endif // _WIN32

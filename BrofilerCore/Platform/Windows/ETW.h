@@ -67,9 +67,9 @@ typedef struct _EVENT_HEADER {
 typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
 
     USHORT      Reserved1;                      // Reserved for internal use
-    USHORT      ExtType;                        // Extended info type 
+    USHORT      ExtType;                        // Extended info type
     struct {
-        USHORT  Linkage : 1;       // Indicates additional extended 
+        USHORT  Linkage : 1;       // Indicates additional extended
                                    // data item
         USHORT  Reserved2 : 15;
     };
@@ -94,6 +94,4 @@ typedef struct _EVENT_RECORD {
 #endif
 /////
 
-
-
-#endif
+#endif // _WIN32
